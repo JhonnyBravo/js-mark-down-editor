@@ -1,7 +1,6 @@
 # Eclipse
 .project
 .settings
-.tern-project
 
 # npm
 node_modules
