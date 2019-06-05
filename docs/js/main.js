@@ -1,15 +1,52 @@
+var singleInput = {
+    template : "#single-input-template",
+    model : {
+        prop : "value",
+        event : "input"
+    },
+    props : [ "id", "label", "placeholder", "value" ]
+}
+
+var multipleInput = {
+    template : "#multiple-input-template",
+    model : {
+        prop : "value",
+        event : "input"
+    },
+    props : [ "id", "label", "placeholder", "rows", "value" ]
+}
+
 new Vue({
     el : "#app",
+    components : {
+        "single-input" : singleInput,
+        "multiple-input" : multipleInput
+    },
     data : {
-        title : null,
-        contents : null
+        title : {
+            id : "title",
+            label : "Title",
+            value : null
+        },
+        contents : {
+            id : "contents",
+            label : "Contents",
+            value : null,
+            rows : 10
+        }
     },
     computed : {
+        titleData : function () {
+            return this.title.value;
+        },
+        contentsData : function () {
+            return this.contents.value;
+        },
         markdown : function () {
             var md = null;
 
-            if (this.title != null && this.contents != null) {
-                md = "# " + this.title + "\n" + this.contents;
+            if (this.titleData != null && this.contentsData != null) {
+                md = "# " + this.titleData + "\n" + this.contentsData;
             }
 
             return md;
@@ -27,44 +64,30 @@ new Vue({
         }
     },
     watch : {
-        title : function () {
-            var pattern = /\\|\/|:|\*|\?|"|<|>|\||#/g;
-
-            if (pattern.test(this.title)) {
-                window.alert('Title に \\ / : * ? " < > | # は使用できません。');
-                this.title = this.title.replace(pattern, "");
-            }
-        },
         html : function () {
             var htmlOutput = document.getElementById("HtmlOutput");
             htmlOutput.innerHTML = this.html;
 
-            var table = document.getElementsByTagName("table");
-
-            if (table.length > 0) {
-                for (var i = 0; i < table.length; i++) {
-                    table[i].setAttribute("class",
-                            "table table-bordered table-hover")
-                }
-            }
-
-            var thead = document.getElementsByTagName("thead");
-
-            if (thead.length > 0) {
-                for (var i = 0; i < thead.length; i++) {
-                    thead[i].setAttribute("class", "thead-dark");
-                }
-            }
+            this.setAttribute("table", "class",
+                    "table table-bordered table-hover");
+            this.setAttribute("thead", "class", "thead-dark");
         }
     },
     methods : {
+        setAttribute : function (tagName, attrName, attrValue) {
+            var elements = document.getElementsByTagName(tagName);
+
+            for (var i = 0; i < elements.length; i++) {
+                elements[i].setAttribute(attrName, attrValue);
+            }
+        },
         getHtmlBlob : function () {
             var html = document.createElement("html");
 
             // head をコピーする。
             var head = document.head.cloneNode(true);
             var title = head.getElementsByTagName("title");
-            title[0].textContent = this.title;
+            title[0].textContent = this.titleData;
 
             html.appendChild(head);
 
@@ -115,20 +138,27 @@ new Vue({
             URL.revokeObjectURL(url);
         },
         save : function () {
-            if (this.title == null) {
+            if (this.titleData == null) {
                 window.alert("Title を入力してください。");
                 return;
             }
 
-            if (this.contents == null) {
+            if (this.contentsData == null) {
                 window.alert("Contents を入力してください。");
                 return;
             }
 
-            this.exportFile(this.getMdBlob(), this.title + ".txt");
-            this.exportFile(this.getHtmlBlob(), this.title + ".html");
+            var pattern = /\\|\/|:|\*|\?|"|<|>|\||#/g;
+
+            if (pattern.test(this.titleData)) {
+                window.alert('Title に \\ / : * ? " < > | # は使用できません。');
+                return;
+            }
+
+            this.exportFile(this.getMdBlob(), this.titleData + ".txt");
+            this.exportFile(this.getHtmlBlob(), this.titleData + ".html");
         },
-        onChangeFile : function (e) {
+        importFile : function (e) {
             var file = e.target.files[0];
 
             var pattern = /\.txt/;
@@ -138,12 +168,12 @@ new Vue({
                 return;
             }
 
-            this.title = file.name.replace(pattern, "");
-            this.contents = this.readFile(file);
+            this.title.value = file.name.replace(pattern, "");
+            this.readFile(file);
         },
         readFile : function (file) {
             var reader = new FileReader();
-            var vue = this;
+            var vm = this;
 
             reader.addEventListener("load", function (e) {
                 var result = new Uint8Array(e.target.result);
@@ -157,20 +187,20 @@ new Vue({
                     break;
                 }
 
-                var pattern = new RegExp("# " + vue.title + "\r\n|# "
-                        + vue.title + "\n");
+                var pattern = new RegExp("# " + vm.titleData + "\r\n|# "
+                        + vm.titleData + "\n");
 
                 var converted = Encoding.convert(result, "UNICODE");
                 var contents = Encoding.codeToString(converted);
 
-                vue.contents = contents.replace(pattern, "");
+                vm.contents.value = contents.replace(pattern, "");
             });
 
             reader.readAsArrayBuffer(file);
         },
         clear : function () {
-            this.title = null;
-            this.contents = null;
+            this.title.value = null;
+            this.contents.value = null;
         }
     }
 });
