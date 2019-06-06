@@ -45,7 +45,8 @@ new Vue({
         markdown : function () {
             var md = null;
 
-            if (this.titleData != null && this.contentsData != null) {
+            if (!this.isEmpty(this.titleData)
+                    && !this.isEmpty(this.contentsData)) {
                 md = "# " + this.titleData + "\n" + this.contentsData;
             }
 
@@ -74,6 +75,15 @@ new Vue({
         }
     },
     methods : {
+        isEmpty : function (value) {
+            var result = false;
+
+            if (value == null || value == "") {
+                result = true;
+            }
+
+            return result;
+        },
         setAttribute : function (tagName, attrName, attrValue) {
             var elements = document.getElementsByTagName(tagName);
 
