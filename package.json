@@ -1,6 +1,6 @@
 {
   "name": "mark-down-editor",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "JavaScript 版 Mark Down Editor。",
   "main": "index.js",
   "scripts": {
