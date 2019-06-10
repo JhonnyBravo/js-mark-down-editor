@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style type="text/css">
+        pre {
+            background-color: rgb(54, 69, 73);
+            color: rgb(227, 227, 227);
+        }
+        
+        table{
+            margin-top:2rem;
+        }
+    </style>
+    <title>Table Definition</title>
+</head>
+
+<body>
+    <navbar id="navbar" v-bind:brand="brand" v-bind:links="links"></navbar>
+    <div class="container">
+        <div class="row">
+            <h2>Entity</h2>
+        </div>
+        <div class="row" id="entity">
+            <div class="col">
+                <form>
+                    <single-input v-bind:id="table.id" v-bind:label="table.label" v-model="table.value"></single-input>
+                    <single-input v-bind:id="file.id" v-bind:label="file.label" v-model="file.value"></single-input>
+                </form>
+            </div>
+            <div class="col">
+                <entity-table v-bind:table-name="table.value" v-bind:file-name="file.value"></entity-table>
+            </div>
+        </div>
+        <div class="row">
+            <h2>Columns</h2>
+        </div>
+        <div class="row" id="definition">
+            <div class="col">
+                <form>
+                    <div class="row">
+                        <select-input class="col" v-bind:id="no.id" v-bind:label="no.label" v-model="no.value" v-bind:options="no.options" v-on:change="getDefinition"></select-input>
+                        <single-input class="col" v-bind:id="logical.id" v-bind:label="logical.label" v-model="logical.value"></single-input>
+                        <single-input class="col" v-bind:id="phisical.id" v-bind:label="phisical.label" v-model="phisical.value"></single-input>
+                    </div>
+
+                    <div class="row">
+                        <select-input class="col" v-bind:id="key.id" v-bind:label="key.label" v-model="key.value" v-bind:options="key.options"></select-input>
+                        <select-input class="col" v-bind:id="type.id" v-bind:label="type.label" v-model="type.value" v-bind:options="type.options"></select-input>
+                        <single-input class="col" v-bind:id="size.id" v-bind:label="size.label" v-model="size.value"></single-input>
+                    </div>
+
+                    <multiple-input v-bind:id="note.id" v-bind:label="note.label" v-model="note.value"></multiple-input>
+                    <button type="button" class="btn btn-primary" v-on:click="addDefinition">Add</button>
+                    <button type="button" class="btn btn-primary" v-on:click="updateDefinition">Update</button>
+                    <button type="button" class="btn btn-danger" v-on:click="deleteDefinition">Delete</button>
+                </form>
+            </div>
+            <div class="col">
+                <definition-table id="definition-table" v-bind:definitions="definitions"></definition-table>
+            </div>
+        </div>
+    </div>
+    <!-- JavaScript 実行プログラム -->
+    <div id="bin">
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/1.0.29/encoding.min.js"></script>
+        <!-- Vue.js -->
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <!-- Template -->
+        <script type="text/x-template" id="navbar-template">
+            <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+            <a class="navbar-brand" v-bind:href="brand.url">{{brand.label}}</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item" v-for="link in links">
+                        <a class="nav-link" v-bind:href="link.url">{{link.label}}</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        </script>
+        <script type="text/x-template" id="single-input-template">
+            <div>
+            <label v-bind:for="id">{{label}}</label>
+            <input type="text" class="form-control" v-bind:id="id" v-bind:placeholder="placeholder" v-bind:value="value" v-on:input="$emit('input',$event.target.value)">
+        </div>
+        </script>
+        <script type="text/x-template" id="multiple-input-template">
+            <div>
+            <label v-bind:for="id">{{label}}</label>
+            <textarea class="form-control" v-bind:id="id" v-bind:placeholder="placeholder" v-bind:rows="rows" v-bind:value="value" v-on:input="$emit('input',$event.target.value)"></textarea>
+        </div>
+        </script>
+        <script type="text/x-template" id="select-input-template">
+        <div>
+            <label v-bind:for="id">{{label}}</label>
+            <select class="custom-select d-block w-100" v-bind:id="id" v-bind:value="value" v-on:change="$emit('change',$event.target.value)">
+                <option v-for="option in options" v-bind:value="option.value">{{option.label}}</option>
+            </select>
+        </div>
+        </script>
+        <script type="text/x-template" id="entity-table-template">
+            <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Table Name</th>
+                    <th>File Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{tableName}}</td>
+                    <td>{{fileName}}</td>
+                </tr>
+            </tbody>
+        </table>
+        </script>
+        <script type="text/x-template" id="definition-table-template">
+            <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Logical Name</th>
+                    <th>Phisical Name</th>
+                    <th>Key</th>
+                    <th>Data Type</th>
+                    <th>Size</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="definition in definitions">
+                    <td>{{definition.no}}</td>
+                    <td>{{definition.logicalName}}</td>
+                    <td>{{definition.phisicalName}}</td>
+                    <td>{{definition.key}}</td>
+                    <td>{{definition.dataType}}</td>
+                    <td>{{definition.size}}</td>
+                    <td>{{definition.note}}</td>
+                </tr>
+            </tbody>
+        </table>
+        </script>
+        <script src="js/navbar.js"></script>
+        <script src="js/table_definition.js"></script>
+    </div>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <div id="lib">
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    </div>
+</body>
+
+</html>
