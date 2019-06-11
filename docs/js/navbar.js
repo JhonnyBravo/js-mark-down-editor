@@ -1,8 +1,3 @@
-var navbar = {
-    template : "#navbar-template",
-    props : [ "brand", "links" ]
-}
-
 new Vue({
     el : "#navbar",
     components : {
