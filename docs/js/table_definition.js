@@ -1,41 +1,4 @@
-var singleInput = {
-    template : "#single-input-template",
-    model : {
-        prop : "value",
-        event : "input"
-    },
-    props : [ "id", "label", "placeholder", "value" ]
-}
-
-var multipleInput = {
-    template : "#multiple-input-template",
-    model : {
-        prop : "value",
-        event : "input"
-    },
-    props : [ "id", "label", "placeholder", "rows", "value" ]
-}
-
-var selectInput = {
-    template : "#select-input-template",
-    model : {
-        prop : "value",
-        event : "change"
-    },
-    props : [ "id", "label", "value", "options" ]
-}
-
-var entityTable = {
-    template : "#entity-table-template",
-    props : [ "file-name", "table-name" ]
-}
-
-var definitionTable = {
-    template : "#definition-table-template",
-    props : [ "definitions" ]
-}
-
-new Vue({
+var entity = new Vue({
     el : "#entity",
     components : {
         "single-input" : singleInput,
@@ -63,6 +26,7 @@ new Vue({
         "select-input" : selectInput,
         "definition-table" : definitionTable
     },
+    mixins : [ fileResource ],
     data : {
         no : {
             id : "no",
@@ -247,6 +211,59 @@ new Vue({
                 this.definitions.splice(i, 1, definition);
                 this.clear();
             }
+        },
+        getHtmlBlob : function () {
+            var html = document.createElement("html");
+
+            var head = document.head.cloneNode(true);
+            var title = head.getElementsByTagName("title");
+            title[0].textContent = entity.table.value;
+
+            html.appendChild(head);
+
+            var body = document.body.cloneNode(true);
+            html.appendChild(body);
+
+            var nav = html.getElementsByTagName("nav");
+
+            for (var i = 0; i < nav.length; i++) {
+                nav[i].remove();
+            }
+
+            var div = html.getElementsByTagName("div");
+
+            for (var i = 0; i < div.length; i++) {
+                if (div[i].id == "bin") {
+                    div[i].remove();
+                }
+            }
+
+            var form = html.querySelectorAll("form");
+
+            for (var i = 0; i < form.length; i++) {
+                form[i].parentNode.remove();
+            }
+
+            var htmlOutput = html.innerHTML;
+
+            var blob = new Blob([ htmlOutput ], {
+                type : "text/html"
+            });
+
+            return blob;
+        },
+        save : function () {
+            if (entity.table.value == null || entity.table.value == "") {
+                window.alert("Table Name を入力してください。");
+                return;
+            }
+
+            if (this.definitions.length == 0) {
+                window.alert("Columns を入力してください。");
+                return;
+            }
+
+            this.exportFile(this.getHtmlBlob(), entity.table.value + ".html");
         }
     }
 });
