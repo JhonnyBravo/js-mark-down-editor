@@ -1,27 +1,10 @@
-var singleInput = {
-    template : "#single-input-template",
-    model : {
-        prop : "value",
-        event : "input"
-    },
-    props : [ "id", "label", "placeholder", "value" ]
-}
-
-var multipleInput = {
-    template : "#multiple-input-template",
-    model : {
-        prop : "value",
-        event : "input"
-    },
-    props : [ "id", "label", "placeholder", "rows", "value" ]
-}
-
 new Vue({
     el : "#app",
     components : {
         "single-input" : singleInput,
         "multiple-input" : multipleInput
     },
+    mixins : [ rendererResource, fileResource ],
     data : {
         title : {
             id : "title",
@@ -36,31 +19,12 @@ new Vue({
         }
     },
     computed : {
-        titleData : function () {
-            return this.title.value;
-        },
-        contentsData : function () {
-            return this.contents.value;
-        },
         markdown : function () {
-            var md = null;
-
-            if (!this.isEmpty(this.titleData)
-                    && !this.isEmpty(this.contentsData)) {
-                md = "# " + this.titleData + "\n" + this.contentsData;
-            }
-
+            var md = this.mdBuilder(this.title.value, this.contents.value);
             return md;
         },
         html : function () {
-            var html = null;
-
-            if (this.markdown != null) {
-                html = marked(this.markdown, {
-                    sanitize : true
-                });
-            }
-
+            var html = this.htmlBuilder(this.title.value, this.contents.value);
             return html;
         }
     },
@@ -75,22 +39,6 @@ new Vue({
         }
     },
     methods : {
-        isEmpty : function (value) {
-            var result = false;
-
-            if (value == null || value == "") {
-                result = true;
-            }
-
-            return result;
-        },
-        setAttribute : function (tagName, attrName, attrValue) {
-            var elements = document.getElementsByTagName(tagName);
-
-            for (var i = 0; i < elements.length; i++) {
-                elements[i].setAttribute(attrName, attrValue);
-            }
-        },
         getHtmlBlob : function () {
             var html = document.createElement("html");
 
@@ -136,37 +84,26 @@ new Vue({
 
             return blob;
         },
-        exportFile : function (blob, fileName) {
-            var url = URL.createObjectURL(blob);
-            var anchor = document.createElement("a");
-
-            anchor.href = url;
-            anchor.target = "_blank";
-            anchor.download = fileName;
-
-            anchor.click();
-            URL.revokeObjectURL(url);
-        },
         save : function () {
-            if (this.titleData == null) {
+            if (this.isEmpty(this.title.value)) {
                 window.alert("Title を入力してください。");
                 return;
             }
 
-            if (this.contentsData == null) {
+            if (this.isEmpty(this.contents.value)) {
                 window.alert("Contents を入力してください。");
                 return;
             }
 
             var pattern = /\\|\/|:|\*|\?|"|<|>|\||#/g;
 
-            if (pattern.test(this.titleData)) {
+            if (pattern.test(this.title.value)) {
                 window.alert('Title に \\ / : * ? " < > | # は使用できません。');
                 return;
             }
 
-            this.exportFile(this.getMdBlob(), this.titleData + ".txt");
-            this.exportFile(this.getHtmlBlob(), this.titleData + ".html");
+            this.exportFile(this.getMdBlob(), this.title.value + ".txt");
+            this.exportFile(this.getHtmlBlob(), this.title.value + ".html");
         },
         importFile : function (e) {
             var file = e.target.files[0];
@@ -179,34 +116,7 @@ new Vue({
             }
 
             this.title.value = file.name.replace(pattern, "");
-            this.readFile(file);
-        },
-        readFile : function (file) {
-            var reader = new FileReader();
-            var vm = this;
-
-            reader.addEventListener("load", function (e) {
-                var result = new Uint8Array(e.target.result);
-
-                switch (Encoding.detect(result)) {
-                case "UTF16":
-                    result = new Uint16Array(e.target.result);
-                    break;
-                case "UTF32":
-                    result = new Uint32Array(e.target.result);
-                    break;
-                }
-
-                var pattern = new RegExp("# " + vm.titleData + "\r\n|# "
-                        + vm.titleData + "\n");
-
-                var converted = Encoding.convert(result, "UNICODE");
-                var contents = Encoding.codeToString(converted);
-
-                vm.contents.value = contents.replace(pattern, "");
-            });
-
-            reader.readAsArrayBuffer(file);
+            this.readFile(file, this.contents);
         },
         clear : function () {
             this.title.value = null;
