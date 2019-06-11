@@ -12,9 +12,9 @@
             background-color: rgb(54, 69, 73);
             color: rgb(227, 227, 227);
         }
-        
-        table{
-            margin-top:2rem;
+
+        table {
+            margin-top: 2rem;
         }
     </style>
     <title>Table Definition</title>
@@ -63,6 +63,11 @@
             </div>
             <div class="col">
                 <definition-table id="definition-table" v-bind:definitions="definitions"></definition-table>
+                <div>
+                    <form>
+                        <button type="button" class="btn btn-primary" v-on:click="save">Save</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -74,7 +79,7 @@
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <!-- Template -->
         <script type="text/x-template" id="navbar-template">
-            <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark">
             <a class="navbar-brand" v-bind:href="brand.url">{{brand.label}}</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -89,13 +94,13 @@
         </nav>
         </script>
         <script type="text/x-template" id="single-input-template">
-            <div>
+        <div>
             <label v-bind:for="id">{{label}}</label>
             <input type="text" class="form-control" v-bind:id="id" v-bind:placeholder="placeholder" v-bind:value="value" v-on:input="$emit('input',$event.target.value)">
         </div>
         </script>
         <script type="text/x-template" id="multiple-input-template">
-            <div>
+        <div>
             <label v-bind:for="id">{{label}}</label>
             <textarea class="form-control" v-bind:id="id" v-bind:placeholder="placeholder" v-bind:rows="rows" v-bind:value="value" v-on:input="$emit('input',$event.target.value)"></textarea>
         </div>
@@ -109,7 +114,7 @@
         </div>
         </script>
         <script type="text/x-template" id="entity-table-template">
-            <table class="table table-bordered table-hover">
+        <table class="table table-bordered table-hover">
             <thead class="thead-dark">
                 <tr>
                     <th>Table Name</th>
@@ -125,7 +130,7 @@
         </table>
         </script>
         <script type="text/x-template" id="definition-table-template">
-            <table class="table table-bordered table-hover">
+        <table class="table table-bordered table-hover">
             <thead class="thead-dark">
                 <tr>
                     <th>No</th>
@@ -150,7 +155,12 @@
             </tbody>
         </table>
         </script>
+        <script src="js/navbar_template.js"></script>
+        <script src="js/form_template.js"></script>
+        <script src="js/table_template.js"></script>
+        <!-- Main -->
         <script src="js/navbar.js"></script>
+        <script src="js/file_resource.js"></script>
         <script src="js/table_definition.js"></script>
     </div>
 
