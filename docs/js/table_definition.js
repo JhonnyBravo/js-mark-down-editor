@@ -107,6 +107,59 @@ new Vue({
         },
         definitions : []
     },
+    computed : {
+        html : function () {
+            var html = document.createElement("html");
+
+            var head = document.head.cloneNode(true);
+            var title = head.getElementsByTagName("title");
+            title[0].textContent = entity.table.value;
+
+            html.appendChild(head);
+
+            var body = document.body.cloneNode(true);
+            html.appendChild(body);
+
+            var nav = html.getElementsByTagName("nav");
+
+            for (var i = 0; i < nav.length; i++) {
+                nav[i].remove();
+            }
+
+            var div = html.getElementsByTagName("div");
+
+            for (var i = 0; i < div.length; i++) {
+                if (div[i].id == "bin") {
+                    div[i].remove();
+                }
+            }
+
+            var form = html.querySelectorAll("form");
+
+            for (var i = 0; i < form.length; i++) {
+                form[i].parentNode.remove();
+            }
+
+            var htmlOutput = html.innerHTML;
+            return htmlOutput;
+        },
+        markdown : function () {
+            var gfm = turndownPluginGfm.gfm;
+            var tds = new TurndownService();
+
+            tds.use(gfm);
+            tds.remove("style");
+            tds.addRule("title", {
+                filter : "title",
+                replacement : function (content) {
+                    return "# " + content;
+                }
+            });
+
+            var mdOutput = tds.turndown(this.html);
+            return mdOutput.replace(/\n/g, "\r\n").replace(/^ +#/, "#");
+        }
+    },
     methods : {
         clear : function () {
             this.no.value = null;
@@ -213,41 +266,19 @@ new Vue({
             }
         },
         getHtmlBlob : function () {
-            var html = document.createElement("html");
-
-            var head = document.head.cloneNode(true);
-            var title = head.getElementsByTagName("title");
-            title[0].textContent = entity.table.value;
-
-            html.appendChild(head);
-
-            var body = document.body.cloneNode(true);
-            html.appendChild(body);
-
-            var nav = html.getElementsByTagName("nav");
-
-            for (var i = 0; i < nav.length; i++) {
-                nav[i].remove();
-            }
-
-            var div = html.getElementsByTagName("div");
-
-            for (var i = 0; i < div.length; i++) {
-                if (div[i].id == "bin") {
-                    div[i].remove();
-                }
-            }
-
-            var form = html.querySelectorAll("form");
-
-            for (var i = 0; i < form.length; i++) {
-                form[i].parentNode.remove();
-            }
-
-            var htmlOutput = html.innerHTML;
+            var htmlOutput = this.html;
 
             var blob = new Blob([ htmlOutput ], {
                 type : "text/html"
+            });
+
+            return blob;
+        },
+        getMdBlob : function () {
+            var mdOutput = this.markdown;
+
+            var blob = new Blob([ mdOutput ], {
+                type : "text/plain"
             });
 
             return blob;
@@ -264,6 +295,7 @@ new Vue({
             }
 
             this.exportFile(this.getHtmlBlob(), entity.table.value + ".html");
+            this.exportFile(this.getMdBlob(), entity.table.value + ".txt");
         }
     }
 });
