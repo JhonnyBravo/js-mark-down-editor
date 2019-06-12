@@ -9,8 +9,8 @@ new Vue({
             label : "Mark Down Editor"
         },
         links : [ {
-            url : "index.html",
-            label : "Home"
+            url : "table_definition.html",
+            label : "Table Definition"
         } ]
     }
 })
