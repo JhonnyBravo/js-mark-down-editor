@@ -16,7 +16,7 @@
     "bootstrap": "^4.1.2",
     "encoding-japanese": "^1.0.29",
     "jquery": "^3.3.1",
-    "marked": "^0.6.2",
+    "marked": "^1.1.1",
     "popper.js": "^1.14.3",
     "turndown": "^5.0.3",
     "turndown-plugin-gfm": "^1.0.2",
