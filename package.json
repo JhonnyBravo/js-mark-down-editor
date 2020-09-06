@@ -16,7 +16,7 @@
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.24",
     "encoding-japanese": "^1.0.29",
-    "marked": "^0.6.2",
+    "marked": "^1.1.1",
     "nuxt": "^2.0.0",
     "vue": "^2.6.10"
   },
